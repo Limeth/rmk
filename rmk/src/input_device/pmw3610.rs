@@ -10,7 +10,7 @@ use embedded_hal::digital::{InputPin, OutputPin};
 use embedded_hal_async::spi::SpiBus;
 use usbd_hid::descriptor::MouseReport;
 
-use crate::channel::KEYBOARD_REPORT_CHANNEL;
+use crate::channel::KEYBOARD_REPORT_SENDER;
 pub use crate::driver::bitbang_spi::{BitBangError, BitBangSpiBus};
 use crate::event::{Axis, AxisEvent, AxisValType, Event};
 use crate::hid::Report;
@@ -624,7 +624,7 @@ impl<'a, const ROW: usize, const COL: usize, const NUM_LAYER: usize, const NUM_E
     }
 
     async fn send_report(&self, report: Report) {
-        KEYBOARD_REPORT_CHANNEL.send(report).await;
+        KEYBOARD_REPORT_SENDER.read().await.send(report).await;
     }
 
     fn get_keymap(&self) -> &RefCell<KeyMap<'a, ROW, COL, NUM_LAYER, NUM_ENCODER>> {

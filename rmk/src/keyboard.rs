@@ -19,7 +19,7 @@ use {
     crate::event::ControllerEvent,
 };
 
-use crate::channel::{KEY_EVENT_CHANNEL, KEYBOARD_REPORT_CHANNEL};
+use crate::channel::{KEY_EVENT_CHANNEL, KEYBOARD_REPORT_SENDER};
 use crate::combo::Combo;
 use crate::config::Hand;
 use crate::descriptor::KeyboardReport;
@@ -295,7 +295,7 @@ impl<'a, const ROW: usize, const COL: usize, const NUM_LAYER: usize, const NUM_E
 
     /// Send a keyboard report to the host
     async fn send_report(&self, report: Report) {
-        KEYBOARD_REPORT_CHANNEL.sender().send(report).await
+        KEYBOARD_REPORT_SENDER.read().await.sender().send(report).await
     }
 
     /// Get a copy of the next timeout key in the buffer,

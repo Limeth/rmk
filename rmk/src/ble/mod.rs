@@ -42,7 +42,7 @@ use crate::ble::ble_server::{BleHidServer, Server};
 use crate::ble::device_info::{PnPID, VidSource};
 use crate::ble::led::BleLedReader;
 use crate::ble::profile::{ProfileInfo, ProfileManager, UPDATED_CCCD_TABLE, UPDATED_PROFILE};
-use crate::channel::{KEYBOARD_REPORT_CHANNEL, LED_SIGNAL};
+use crate::channel::{KEYBOARD_REPORT_RECEIVER, LED_SIGNAL};
 use crate::config::RmkConfig;
 use crate::hid::{DummyWriter, RunnableHidWriter};
 #[cfg(feature = "split")]
@@ -329,7 +329,7 @@ pub(crate) async fn run_ble<
                                 CENTRAL_SLEEP.signal(true);
 
                                 // Wait for the keyboard report for wake the keyboard
-                                let _ = KEYBOARD_REPORT_CHANNEL.receive().await;
+                                let _ = KEYBOARD_REPORT_RECEIVER.receive().await;
 
                                 // Quit from sleep mode
                                 #[cfg(feature = "split")]
@@ -389,7 +389,7 @@ pub(crate) async fn run_ble<
                                 CENTRAL_SLEEP.signal(true);
 
                                 // Wait for the keyboard report for wake the keyboard
-                                let _ = KEYBOARD_REPORT_CHANNEL.receive().await;
+                                let _ = KEYBOARD_REPORT_RECEIVER.receive().await;
 
                                 // Quit from sleep mode
                                 #[cfg(feature = "split")]
@@ -434,7 +434,7 @@ pub(crate) async fn run_ble<
                     CENTRAL_SLEEP.signal(true);
 
                     // Wait for the keyboard report for wake the keyboard
-                    let _ = KEYBOARD_REPORT_CHANNEL.receive().await;
+                    let _ = KEYBOARD_REPORT_RECEIVER.receive().await;
 
                     // Quit from sleep mode
                     #[cfg(feature = "split")]
