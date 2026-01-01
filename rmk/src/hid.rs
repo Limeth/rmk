@@ -7,7 +7,7 @@ use serde::Serialize;
 use usbd_hid::descriptor::{AsInputReport, MediaKeyboardReport, MouseReport, SystemControlReport};
 
 use crate::CONNECTION_STATE;
-use crate::channel::KEYBOARD_REPORT_CHANNEL;
+use crate::channel::KEYBOARD_REPORT_RECEIVER;
 use crate::descriptor::KeyboardReport;
 use crate::state::ConnectionState;
 #[cfg(not(feature = "_no_usb"))]
@@ -110,7 +110,7 @@ impl RunnableHidWriter for DummyWriter {
         // Set CONNECTION_STATE to true to keep receiving messages from the peripheral
         CONNECTION_STATE.store(ConnectionState::Connected.into(), Ordering::Release);
         loop {
-            let _ = KEYBOARD_REPORT_CHANNEL.receive().await;
+            let _ = KEYBOARD_REPORT_RECEIVER.receive().await;
         }
     }
 

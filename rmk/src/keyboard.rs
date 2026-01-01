@@ -14,7 +14,7 @@ use rmk_types::modifier::ModifierCombination;
 use rmk_types::mouse_button::MouseButtons;
 use usbd_hid::descriptor::{MediaKeyboardReport, SystemControlReport};
 
-use crate::channel::KEYBOARD_REPORT_CHANNEL;
+use crate::channel::KEYBOARD_REPORT_SENDER;
 use crate::combo::Combo;
 use crate::config::Hand;
 use crate::descriptor::KeyboardReport;
@@ -273,7 +273,7 @@ impl<'a> Keyboard<'a> {
             return;
         }
 
-        KEYBOARD_REPORT_CHANNEL.sender().send(report).await
+        KEYBOARD_REPORT_SENDER.read().await.sender().send(report).await
     }
 
     /// Get a copy of the next timeout key in the buffer,

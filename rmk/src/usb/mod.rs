@@ -8,7 +8,7 @@ use embassy_usb::{Builder, Handler};
 use ssmarshal::serialize;
 use static_cell::StaticCell;
 
-use crate::channel::KEYBOARD_REPORT_CHANNEL;
+use crate::channel::KEYBOARD_REPORT_RECEIVER;
 use crate::config::DeviceConfig;
 use crate::descriptor::CompositeReportType;
 use crate::hid::{HidError, HidWriterTrait, Report, RunnableHidWriter};
@@ -55,7 +55,7 @@ impl<'a, 'd, D: Driver<'d>> UsbKeyboardWriter<'a, 'd, D> {
 
 impl<'d, D: Driver<'d>> RunnableHidWriter for UsbKeyboardWriter<'_, 'd, D> {
     async fn get_report(&mut self) -> Self::ReportType {
-        KEYBOARD_REPORT_CHANNEL.receive().await
+        KEYBOARD_REPORT_RECEIVER.receive().await
     }
 }
 

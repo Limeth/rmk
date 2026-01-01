@@ -156,6 +156,7 @@ std = [
 ## Enable async matrix scanning
 async_matrix = []
 
+hid_report_proxy = []
 ## Enable split keyboard support.
 split = [
     "dep:embedded-io-async",
