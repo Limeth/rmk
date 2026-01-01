@@ -1,6 +1,6 @@
 //! Exposed channels which can be used to share data across devices & processors
 
-use embassy_sync::channel::Channel;
+use embassy_sync::{channel::Channel, rwlock::RwLock};
 #[cfg(any(feature = "split", feature = "controller"))]
 use embassy_sync::pubsub::PubSubChannel;
 pub use embassy_sync::{blocking_mutex, channel, pubsub, zerocopy_channel};
@@ -61,7 +61,9 @@ pub static KEY_EVENT_CHANNEL: Channel<RawMutex, KeyboardEvent, EVENT_CHANNEL_SIZ
 /// Channel for all other events
 pub static EVENT_CHANNEL: Channel<RawMutex, Event, EVENT_CHANNEL_SIZE> = Channel::new();
 /// Channel for keyboard report from input processors to hid writer/reader
-pub static KEYBOARD_REPORT_CHANNEL: Channel<RawMutex, Report, REPORT_CHANNEL_SIZE> = Channel::new();
+pub static KEYBOARD_REPORT_RECEIVER: Channel<RawMutex, Report, REPORT_CHANNEL_SIZE> = Channel::new();
+/// TODO: Make zero-cost without hid_report_proxy feature
+pub static KEYBOARD_REPORT_SENDER: RwLock<RawMutex, &'static Channel<RawMutex, Report, REPORT_CHANNEL_SIZE>> = RwLock::new(&KEYBOARD_REPORT_RECEIVER);
 /// Channel for controller events
 #[cfg(feature = "controller")]
 pub static CONTROLLER_CHANNEL: PubSubChannel<

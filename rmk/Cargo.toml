@@ -165,6 +165,8 @@ std = [
 ## Enable async matrix scanning
 async_matrix = []
 
+hid_report_proxy = []
+
 ## Enable to use controllers to control other hardwares on the board or peripheral
 controller = []
 

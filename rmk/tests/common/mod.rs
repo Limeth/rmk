@@ -10,7 +10,7 @@ use embassy_sync::mutex::Mutex;
 use embassy_time::{Duration, Timer};
 use futures::join;
 use log::debug;
-use rmk::channel::{KEY_EVENT_CHANNEL, KEYBOARD_REPORT_CHANNEL};
+use rmk::channel::{KEY_EVENT_CHANNEL, KEYBOARD_REPORT_RECEIVER, KEYBOARD_REPORT_SENDER};
 use rmk::config::{BehaviorConfig, PositionalConfig};
 use rmk::descriptor::KeyboardReport;
 use rmk::event::KeyboardEvent;
@@ -54,7 +54,7 @@ pub async fn run_key_sequence_test<'a, const ROW: usize, const COL: usize, const
     static SEQ_SEND_DONE: Mutex<CriticalSectionRawMutex, bool> = Mutex::new(false);
 
     KEY_EVENT_CHANNEL.clear();
-    KEYBOARD_REPORT_CHANNEL.clear();
+    KEYBOARD_REPORT_RECEIVER.clear();
     static MAX_TEST_TIMEOUT: Duration = Duration::from_secs(5);
 
     join!(
@@ -92,7 +92,7 @@ pub async fn run_key_sequence_test<'a, const ROW: usize, const COL: usize, const
             match select(Timer::after(MAX_TEST_TIMEOUT), async {
                 let mut report_index = -1;
                 for expected in expected_reports {
-                    match select(Timer::after(Duration::from_secs(2)), KEYBOARD_REPORT_CHANNEL.receive()).await {
+                    match select(Timer::after(Duration::from_secs(2)), KEYBOARD_REPORT_RECEIVER.receive()).await {
                         Either::First(_) => panic!("ERROR: report wait timeout reached"),
                         Either::Second(Report::KeyboardReport(report)) => {
                             report_index += 1;

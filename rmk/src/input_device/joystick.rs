@@ -2,7 +2,7 @@ use core::cell::RefCell;
 
 use usbd_hid::descriptor::MouseReport;
 
-use crate::channel::KEYBOARD_REPORT_CHANNEL;
+use crate::channel::KEYBOARD_REPORT_SENDER;
 use crate::event::Event;
 use crate::hid::Report;
 use crate::input_device::{InputProcessor, ProcessResult};
@@ -94,7 +94,7 @@ impl<'a, const ROW: usize, const COL: usize, const NUM_LAYER: usize, const NUM_E
 
     /// Send the processed report.
     async fn send_report(&self, report: Report) {
-        KEYBOARD_REPORT_CHANNEL.send(report).await;
+        KEYBOARD_REPORT_SENDER.read().await.send(report).await;
     }
 
     /// Get the current keymap

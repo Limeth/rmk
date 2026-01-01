@@ -38,7 +38,7 @@ Generally, there are 4-5 running tasks at the same time, depending on the user's
 - `FLASH_CHANNEL`: a multi-sender, single-receiver channel. Many tasks send `FlashOperationMessage`, such as the BLE task (which saves bond info) and the vial task (which saves keys), etc.
 - `KEY_EVENT_CHANNEL`: a multi-sender, single-receiver channel. The sender can be a matrix task that scans the key matrix or a split peripheral manager that receives key events from split peripherals. The receiver, i.e., the keyboard task, receives the key event and processes the key.
 - `EVENT_CHANNEL`: a multi-sender, single-receiver channel. It's used for all events from input devices except `KeyboardEvent`.
-- `KEYBOARD_REPORT_CHANNEL`: a single-sender, single-receiver channel. The keyboard task sends keyboard reports to the channel after the key event is processed, and the USB/BLE task receives the keyboard report and sends the key to the host.
+- `KEYBOARD_REPORT_SENDER`/`KEYBOARD_REPORT_RECEIVER`: a single-sender, single-receiver channel. The keyboard task sends keyboard reports to the channel after the key event is processed, and the USB/BLE task receives the keyboard report and sends the key to the host.
 
 ### Matrix Scanning & Key Processing
 
