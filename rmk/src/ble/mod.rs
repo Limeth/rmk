@@ -44,8 +44,8 @@ use crate::ble::led::BleLedReader;
 use crate::ble::profile::{ProfileInfo, ProfileManager, UPDATED_CCCD_TABLE, UPDATED_PROFILE};
 use crate::channel::{KEYBOARD_REPORT_RECEIVER, LED_SIGNAL};
 use crate::config::RmkConfig;
-use crate::event::{BleStatusChangeEvent, ConnectionChangeEvent, publish_event};
-use crate::hid::{DummyWriter, RunnableHidWriter};
+use crate::event::{BleStateChangeEvent, ConnectionChangeEvent, publish_event};
+use crate::hid::{DummyWriter, Report, RunnableHidWriter};
 #[cfg(feature = "split")]
 use crate::split::ble::central::CENTRAL_SLEEP;
 use crate::state::{ConnectionState, ConnectionType};
@@ -829,7 +829,7 @@ pub(crate) async fn run_dummy_keyboard<
     CONNECTION_STATE.store(ConnectionState::Disconnected.into(), Ordering::Release);
     #[cfg(feature = "storage")]
     let storage_fut = storage.run();
-    let mut dummy_writer = DummyWriter {};
+    let mut dummy_writer = DummyWriter::<Report>::default();
     #[cfg(feature = "storage")]
     select(storage_fut, dummy_writer.run_writer()).await;
     #[cfg(not(feature = "storage"))]

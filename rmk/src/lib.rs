@@ -181,18 +181,21 @@ pub async fn run_rmk<
 ) -> ! {
     // Dispatch the keyboard runner
     #[cfg(feature = "_ble")]
-    crate::ble::run_ble(
-        #[cfg(feature = "host")]
-        keymap,
-        #[cfg(not(feature = "_no_usb"))]
-        usb_driver,
-        #[cfg(feature = "_ble")]
-        stack,
-        #[cfg(feature = "storage")]
-        storage,
-        rmk_config,
-    )
-    .await;
+    {
+        crate::ble::run_ble(
+            #[cfg(feature = "host")]
+            keymap,
+            #[cfg(not(feature = "_no_usb"))]
+            usb_driver,
+            #[cfg(feature = "_ble")]
+            stack,
+            #[cfg(feature = "storage")]
+            storage,
+            rmk_config,
+        )
+        .await;
+        panic!("ble runner stopped");
+    }
 
     // USB keyboard
     #[cfg(all(not(feature = "_no_usb"), not(feature = "_ble")))]
@@ -253,9 +256,38 @@ pub async fn run_rmk<
             }
         })
         .await;
+        panic!("usb runner stopped");
     }
 
-    unreachable!("Should never reach here, wrong feature gate combination?");
+    // No USB or BLE.
+    #[cfg(all(feature = "_no_usb", not(feature = "_ble")))]
+    {
+        warn!("Running without BLE and USB. If this not intentional, enable/disable the relevant features.");
+
+        #[cfg(feature = "host")]
+        use crate::hid::HidReaderWriterComposed;
+        use crate::hid::{DummyReader, DummyWriter, Report};
+
+        run_keyboard(
+            #[cfg(feature = "storage")]
+            storage,
+            #[cfg(feature = "host")]
+            keymap,
+            #[cfg(feature = "host")]
+            HidReaderWriterComposed {
+                reader: DummyReader::default(),
+                writer: DummyWriter::default(),
+            },
+            #[cfg(feature = "vial")]
+            rmk_config.vial_config,
+            core::future::pending(),
+            DummyReader::<LedIndicator>::default(),
+            DummyWriter::<Report>::default(),
+        )
+        .await;
+
+        panic!("dummy runner stopped")
+    }
 }
 
 // Run keyboard task for once

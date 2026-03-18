@@ -1,3 +1,4 @@
+use core::marker::PhantomData;
 /// Traits and types for HID message reporting and listening.
 use core::{future::Future, sync::atomic::Ordering};
 
@@ -95,17 +96,70 @@ pub trait HidReaderTrait {
     fn read_report(&mut self) -> impl Future<Output = Result<Self::ReportType, HidError>>;
 }
 
-pub struct DummyWriter {}
+pub struct HidReaderWriterComposed<R, W> {
+    pub reader: R,
+    pub writer: W,
+}
 
-impl HidWriterTrait for DummyWriter {
-    type ReportType = Report;
+impl<R, W> HidReaderTrait for HidReaderWriterComposed<R, W>
+where
+    R: HidReaderTrait,
+{
+    type ReportType = R::ReportType;
+
+    fn read_report(&mut self) -> impl Future<Output = Result<Self::ReportType, HidError>> {
+        self.reader.read_report()
+    }
+}
+
+impl<R, W> HidWriterTrait for HidReaderWriterComposed<R, W>
+where
+    W: HidWriterTrait,
+{
+    type ReportType = W::ReportType;
+
+    fn write_report(&mut self, report: Self::ReportType) -> impl Future<Output = Result<usize, HidError>> {
+        self.writer.write_report(report)
+    }
+}
+
+pub struct DummyReader<T> {
+    _marker: PhantomData<T>,
+}
+
+impl<T> Default for DummyReader<T> {
+    fn default() -> Self {
+        Self { _marker: PhantomData }
+    }
+}
+
+impl<T> HidReaderTrait for DummyReader<T> {
+    type ReportType = T;
+
+    async fn read_report(&mut self) -> Result<Self::ReportType, HidError> {
+        Err(HidError::UsbDisabled)
+    }
+}
+
+pub struct DummyWriter<T: AsInputReport + Clone> {
+    _marker: PhantomData<T>,
+}
+
+impl<T: AsInputReport + Clone> Default for DummyWriter<T> {
+    fn default() -> Self {
+        Self { _marker: PhantomData }
+    }
+}
+
+impl<T: AsInputReport + Clone> HidWriterTrait for DummyWriter<T> {
+    type ReportType = T;
 
     async fn write_report(&mut self, _report: Self::ReportType) -> Result<usize, HidError> {
         Ok(0)
     }
 }
 
-impl RunnableHidWriter for DummyWriter {
+impl<T: AsInputReport + Clone> RunnableHidWriter for DummyWriter<T> {
     async fn run_writer(&mut self) {
         // Set CONNECTION_STATE to true to keep receiving messages from the peripheral
         CONNECTION_STATE.store(ConnectionState::Connected.into(), Ordering::Release);
